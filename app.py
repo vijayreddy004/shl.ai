@@ -39,7 +39,7 @@ def recommend_from_url():
         soup = BeautifulSoup(response.text, 'html.parser')
         text = soup.get_text(separator=' ', strip=True)
         query = text[:1000]  # Use only the first 1000 characters for brevity
-        print(f"Extracted query from URL: {query}")
+        #print(f"Extracted query from URL: {query}")
         # Forward the extracted query to /recommend logic
         all_matches = []
         errors = []
@@ -57,7 +57,7 @@ def recommend_from_url():
                 )
                 all_matches.extend(reranked.data)
             except Exception as e:
-                print(f"Error during reranking: {e}")
+                #print(f"Error during reranking: {e}")
                 for doc_text in batch_docs:
                     doc = doc_map.get(doc_text, {})
                     errors.append(doc.get("name", "Unknown"))
@@ -80,7 +80,7 @@ def recommend_from_url():
         return jsonify({"results": top_results, "errors": errors})
 
     except Exception as e:
-        print(f"Error fetching URL: {e}")
+        # print(f"Error fetching URL: {e}")
         return jsonify({"error": f"Failed to fetch or parse content: {str(e)}"}), 500
 
 @app.route('/')
@@ -110,7 +110,7 @@ def recommend():
             )
             all_matches.extend(reranked.data)
         except Exception as e:
-            print(f"Error during reranking: {e}")
+            # print(f"Error during reranking: {e}")
             for doc_text in batch_docs:
                 doc = doc_map.get(doc_text, {})
                 errors.append(doc.get("name", "Unknown"))
