@@ -1,6 +1,6 @@
 Flask
 pandas
-pinecone-client
+pinecone
 requests
 beautifulsoup4
 python-dotenv
