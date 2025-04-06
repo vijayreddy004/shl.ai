@@ -4,4 +4,4 @@ pinecone
 requests
 beautifulsoup4
 python-dotenv
-gunicorn
+streamlit

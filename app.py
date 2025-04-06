@@ -1,15 +1,19 @@
-from flask import Flask, request, jsonify, render_template
+import streamlit as st
 import pandas as pd
-from pinecone import Pinecone
 import requests
 from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
+from pinecone import Pinecone
 
 load_dotenv()
-# Load environment variables from .env file 
 
-app = Flask(__name__)
+st.set_page_config(page_title="SHL Assessment Recommender", layout="wide")
+
+
+# App title
+st.markdown("<h1 style='margin-bottom: 0.5rem;'>SHL Assessment Recommender</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: white; margin-bottom: 2rem;'>Find optimal assessments based on job requirements</p>", unsafe_allow_html=True)
 
 # Initialize Pinecone
 api_key = os.getenv("PINECONE_API_KEY")
@@ -27,73 +31,7 @@ for doc in documents:
 text_documents = [str(doc) for doc in documents]
 doc_map = {str(doc): doc for doc in documents}
 
-@app.route('/recommend_from_url', methods=['POST'])
-def recommend_from_url():
-    data = request.get_json()
-    url = data.get("url")
-    if not url:
-        return jsonify({"error": "Missing url parameter"}), 400
-
-    try:
-        response = requests.get(url, timeout=10)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        text = soup.get_text(separator=' ', strip=True)
-        query = text[:1000]  # Use only the first 1000 characters for brevity
-        print(f"Extracted query from URL: {query}")
-        # Forward the extracted query to /recommend logic
-        all_matches = []
-        errors = []
-        batch_size = 5
-
-        for i in range(0, len(text_documents), batch_size):
-            batch_docs = text_documents[i:i+batch_size]
-            try:
-                reranked = pc.inference.rerank(
-                    model="bge-reranker-v2-m3",
-                    query=query,
-                    documents=batch_docs,
-                    top_n=min(6, len(batch_docs)),
-                    return_documents=True
-                )
-                all_matches.extend(reranked.data)
-            except Exception as e:
-                print(f"Error during reranking: {e}")
-                for doc_text in batch_docs:
-                    doc = doc_map.get(doc_text, {})
-                    errors.append(doc.get("name", "Unknown"))
-
-        sorted_matches = sorted(all_matches, key=lambda x: x.score, reverse=True)
-        top_results = []
-        for match in sorted_matches[:10]:
-            doc = doc_map.get(match.document.text, {})
-            top_results.append({
-                "name": doc.get("name", ""),
-                "url": doc.get("url", ""),
-                "job_levels": doc.get("job_levels", ""),
-                "languages": doc.get("languages", ""),
-                "assessment_length": doc.get("assessment_length", ""),
-                "remote_testing": doc.get("remote_testing", ""),
-                "adaptive_irt": doc.get("adaptive_irt", ""),
-                "test_types": doc.get("test_types", "")
-            })
-
-        return jsonify({"results": top_results, "errors": errors})
-
-    except Exception as e:
-        print(f"Error fetching URL: {e}")
-        return jsonify({"error": f"Failed to fetch or parse content: {str(e)}"}), 500
-
-@app.route('/')
-def home():
-    return render_template('input.html')
-
-@app.route('/recommend', methods=['POST'])
-def recommend():
-    data = request.get_json()
-    query = data.get("query")
-    if not query:
-        return jsonify({"error": "Missing query parameter"}), 400
-
+def get_recommendations(query):
     all_matches = []
     errors = []
     batch_size = 5
@@ -110,27 +48,66 @@ def recommend():
             )
             all_matches.extend(reranked.data)
         except Exception as e:
-            print(f"Error during reranking: {e}")
             for doc_text in batch_docs:
                 doc = doc_map.get(doc_text, {})
                 errors.append(doc.get("name", "Unknown"))
 
     sorted_matches = sorted(all_matches, key=lambda x: x.score, reverse=True)
-    top_results = []
-    for match in sorted_matches[:10]:
-        doc = doc_map.get(match.document.text, {})
-        top_results.append({
-            "name": doc.get("name", ""),
-            "url": doc.get("url", ""),
-            "job_levels": doc.get("job_levels", ""),
-            "languages": doc.get("languages", ""),
-            "assessment_length": doc.get("assessment_length", ""),
-            "remote_testing": doc.get("remote_testing", ""),
-            "adaptive_irt": doc.get("adaptive_irt", ""),
-            "test_types": doc.get("test_types", "")
-        })
+    return [doc_map.get(match.document.text, {}) for match in sorted_matches[:10]], errors
 
-    return jsonify({"results": top_results, "errors": errors})
+# Input selection
+input_mode = st.radio("Select Input Type", ("URL", "Query"), horizontal=True)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+def display_results(results, errors):
+    if results:
+        st.subheader("Recommended Assessments")
+        # Prepare table data
+        table_data = []
+        for idx, item in enumerate(results, 1):
+            table_data.append({
+                "#": idx,
+                "Assessment": f"[{item.get('name', '')}]({item.get('url', '')})",
+                "Job Levels": item.get("job_levels", ""),
+                "Languages": item.get("languages", ""),
+                "Duration": item.get("assessment_length", ""),
+                "Remote": "✅" if item.get("remote_testing") else "❌",
+                "Adaptive IRT": "✅" if item.get("adaptive_irt") else "❌",
+                "Test Types": item.get("test_types", "")
+            })
+        
+        # Create and display dataframe
+        df = pd.DataFrame(table_data)[["#", "Assessment", "Job Levels", "Languages",
+                                      "Duration", "Remote", "Adaptive IRT", "Test Types"]]
+        st.markdown(df.to_markdown(index=False), unsafe_allow_html=True)
+    
+    # Display errors if any
+    if errors:
+        with st.expander("Missed Assessments (Description Too Large)"):
+            for error in errors:
+                st.markdown(f"- {error}")
+
+if input_mode == "URL":
+    url_input = st.text_input("Enter URL", placeholder="Paste job description URL")
+    if st.button("Analyze URL"):
+        if url_input:
+            with st.spinner("Analyzing URL..."):
+                try:
+                    response = requests.get(url_input, timeout=10)
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    text = soup.get_text(separator=' ', strip=True)
+                    query = text[:1000]
+                    results, errors = get_recommendations(query)
+                    display_results(results, errors)
+                except Exception as e:
+                    st.error(f"Failed to fetch or parse content: {e}")
+        else:
+            st.error("Please provide a URL.")
+else:
+    query_input = st.text_area("Enter your query", placeholder="e.g., Senior Java Developer", height=150)
+    if st.button("Analyze Text"):
+        if query_input:
+            with st.spinner("Analyzing Text..."):
+                results, errors = get_recommendations(query_input)
+                display_results(results, errors)
+        else:
+            st.error("Please provide a query.")
