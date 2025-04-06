@@ -1,0 +1,6 @@
+Flask
+pandas
+pinecone-client
+requests
+beautifulsoup4
+python-dotenv
