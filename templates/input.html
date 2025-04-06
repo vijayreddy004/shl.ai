@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHL Assessment Recommender</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-hover: #4338CA;
+      --background: #F8FAFC;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #1E293B;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .panels {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+
+    .results {
+      margin-top: 2rem;
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    th {
+      background: #F8FAFC;
+      font-weight: 600;
+    }
+
+    .error-list {
+      margin-top: 1rem;
+      background: #FFF1F2;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .error-item {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #FFE4E6;
+    }
+
+    .show-more {
+      margin-top: 1rem;
+      background: none;
+      color: var(--primary);
+      text-decoration: underline;
+      padding: 0;
+      width: auto;
+    }
+
+    .show-more:hover {
+      color: var(--primary-hover);
+      background: none;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      animation: rotate 2s linear infinite;
+    }
+
+    .loader circle {
+      stroke: white;
+      stroke-width: 4;
+      stroke-linecap: round;
+      animation: dash 1.5s ease-in-out infinite;
+    }
+
+    @keyframes rotate {
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes dash {
+      0% { stroke-dasharray: 1,150; stroke-dashoffset: 0; }
+      50% { stroke-dasharray: 90,150; stroke-dashoffset: -35; }
+      100% { stroke-dasharray: 90,150; stroke-dashoffset: -124; }
+    }
+
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .card {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>SHL Assessment Recommender</h1>
+      <p>Find optimal assessments based on job requirements</p>
+    </div>
+
+    <div class="panels">
+      <div class="card">
+        <h3>Text Search</h3>
+        <form id="recommendForm" class="form-group">
+          <input type="text" id="query" placeholder="e.g., Senior Java Developer">
+          <button type="submit">Analyze Text</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>URL Analysis</h3>
+        <form id="urlForm" class="form-group">
+          <input type="text" id="url" placeholder="Paste job description URL">
+          <button type="submit">Analyze URL</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="results" class="results"></div>
+  </div>
+
+  <div class="loader-overlay" id="loader">
+    <svg class="loader" viewBox="0 0 50 50">
+      <circle cx="25" cy="25" r="20" fill="none" />
+    </svg>
+  </div>
+
+  <script>
+    const loader = document.getElementById('loader');
+    let visibleErrors = 10;
+    let allErrors = [];
+
+    function showLoader() {
+      loader.style.display = 'flex';
+    }
+
+    function hideLoader() {
+      loader.style.display = 'none';
+    }
+
+    async function fetchData(endpoint, payload) {
+      showLoader();
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        return await response.json();
+      } catch (error) {
+        console.error('Fetch error:', error);
+        return { errors: ['Connection error. Please try again.'] };
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function createShowMoreButton() {
+      const button = document.createElement('button');
+      button.className = 'show-more';
+      button.textContent = 'Show More';
+      button.onclick = () => {
+        visibleErrors += 10;
+        renderErrors();
+      };
+      return button;
+    }
+
+    function renderErrors() {
+      const errorContainer = document.getElementById('error-list');
+      errorContainer.innerHTML = '';
+      
+      allErrors.slice(0, visibleErrors).forEach(error => {
+        const div = document.createElement('div');
+        div.className = 'error-item';
+        div.textContent = error;
+        errorContainer.appendChild(div);
+      });
+
+      if (visibleErrors < allErrors.length) {
+        errorContainer.appendChild(createShowMoreButton());
+      }
+    }
+
+    function displayResults(data) {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      if (data.results?.length) {
+        let html = `
+          <h3>Recommended Assessments</h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Assessment</th>
+                  <th>Job Levels</th>
+                  <th>Languages</th>
+                  <th>Duration</th>
+                  <th>Remote</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+        data.results.forEach((item, index) => {
+          html += `
+            <tr>
+              <td>${index + 1}</td>
+              <td><a href="${item.url}" target="_blank">${item.name}</a></td>
+              <td>${item.job_levels}</td>
+              <td>${item.languages}</td>
+              <td>${item.assessment_length}</td>
+              <td>${item.remote_testing ? '✅' : '❌'}</td>
+            </tr>`;
+        });
+
+        html += `</tbody></table></div>`;
+        resultsDiv.innerHTML = html;
+      }
+
+      if (data.errors?.length) {
+        allErrors = data.errors;
+        visibleErrors = 10;
+        
+        const errorHtml = `
+          <div class="error-list">
+            <h4>Missed Assessments (Description Too Large)</h4>
+            <div id="error-list"></div>
+          </div>`;
+        
+        resultsDiv.insertAdjacentHTML('beforeend', errorHtml);
+        renderErrors();
+      }
+
+      if (!data.results?.length && !data.errors?.length) {
+        resultsDiv.innerHTML = `<p>No results found. Please try a different query.</p>`;
+      }
+    }
+
+    document.getElementById('recommendForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = document.getElementById('query').value.trim();
+      if (!query) return;
+      const data = await fetchData('/recommend', { query });
+      displayResults(data);
+    });
+
+    document.getElementById('urlForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = document.getElementById('url').value.trim();
+      if (!url) return;
+      const data = await fetchData('/recommend_from_url', { url });
+      displayResults(data);
+    });
+  </script>
+</body>
+</html>
