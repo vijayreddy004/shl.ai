@@ -4,12 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SHL Assessment Recommender</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #4F46E5;
-      --primary-hover: #4338CA;
-      --background: #F8FAFC;
+      --primary: #000000;
+      --primary-hover: #333333;
+      --background: #f5f5f5;
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --border: rgba(255, 255, 255, 0.2);
+      --shadow: rgba(0, 0, 0, 0.1);
     }
 
     * {
@@ -20,10 +23,26 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #1E293B;
+      background-color: #000000;
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+      color: #ffffff;
       min-height: 100vh;
       padding: 2rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      z-index: -1;
     }
 
     .container {
@@ -33,14 +52,24 @@
 
     .header {
       text-align: center;
-      margin-bottom: 2rem;
-      color: white;
+      margin-bottom: 3rem;
+      position: relative;
     }
 
     .header h1 {
-      font-size: 2rem;
+      font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
+      background: linear-gradient(to right, #ffffff, #cccccc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
     }
 
     .panels {
@@ -50,10 +79,26 @@
     }
 
     .card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .card h3 {
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: #ffffff;
     }
 
     .form-group {
@@ -62,45 +107,71 @@
 
     input {
       width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #E2E8F0;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      transition: border-color 0.2s;
+      padding: 1rem 1.25rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      color: white;
+      transition: all 0.2s;
+      margin-bottom: 1.5rem;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
     }
 
     input:focus {
       outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
     }
 
     button {
-      background: var(--primary);
-      color: white;
+      background: white;
+      color: black;
       border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-weight: 500;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
       width: 100%;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     button:hover {
-      background: var(--primary-hover);
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     }
 
     .results {
-      margin-top: 2rem;
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
+      margin-top: 3rem;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .results h3 {
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: #ffffff;
     }
 
     .table-container {
       overflow-x: auto;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.2);
     }
 
     table {
@@ -110,52 +181,84 @@
     }
 
     th, td {
-      padding: 0.75rem;
+      padding: 1rem;
       text-align: left;
-      border-bottom: 1px solid #F1F5F9;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     th {
-      background: #F8FAFC;
+      background: rgba(0, 0, 0, 0.3);
       font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      position: sticky;
+      top: 0;
+    }
+
+    td {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    td a {
+      color: white;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      transition: border-color 0.2s;
+    }
+
+    td a:hover {
+      border-color: white;
     }
 
     .error-list {
-      margin-top: 1rem;
-      background: #FFF1F2;
-      border-radius: 8px;
-      padding: 1rem;
+      margin-top: 2rem;
+      background: rgba(255, 0, 0, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 0, 0, 0.2);
+    }
+
+    .error-list h4 {
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 1rem;
     }
 
     .error-item {
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #FFE4E6;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .show-more {
-      margin-top: 1rem;
+      margin-top: 1.5rem;
       background: none;
-      color: var(--primary);
+      color: white;
       text-decoration: underline;
       padding: 0;
       width: auto;
+      box-shadow: none;
     }
 
     .show-more:hover {
-      color: var(--primary-hover);
+      color: rgba(255, 255, 255, 0.8);
       background: none;
+      transform: none;
+      box-shadow: none;
     }
 
     .loader {
       display: inline-block;
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       animation: rotate 2s linear infinite;
     }
 
     .loader circle {
       stroke: white;
-      stroke-width: 4;
+      stroke-width: 3;
       stroke-linecap: round;
       animation: dash 1.5s ease-in-out infinite;
     }
@@ -176,11 +279,30 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
+    }
+
+    .disclaimer {
+      margin-top: 25px; 
+      background: rgba(0, 0, 0, 0.3);
+      color: rgba(255, 255, 255, 0.8); 
+      padding: 1.25rem; 
+      border-radius: 12px; 
+      margin-bottom: 2rem; 
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    .disclaimer strong {
+      color: white;
     }
 
     @media (max-width: 768px) {
@@ -189,11 +311,15 @@
       }
       
       .header h1 {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
       }
       
       .card {
-        padding: 1rem;
+        padding: 1.5rem;
+      }
+
+      .results {
+        padding: 1.5rem;
       }
     }
   </style>
@@ -207,32 +333,26 @@
 
     <div class="panels">
       <div class="card">
-        <h3>Text Search</h3>
+        <h3>Search</h3>
         <form id="recommendForm" class="form-group">
-          <input type="text" id="query" placeholder="e.g., Senior Java Developer">
-          <button type="submit">Analyze Text</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <h3>URL Analysis</h3>
-        <form id="urlForm" class="form-group">
-          <input type="text" id="url" placeholder="Paste job description URL">
-          <button type="submit">Analyze URL</button>
+          <input type="text" id="query" 
+                 placeholder="Enter job description text or URL (e.g., https://example.com/job-description)">
+          <button type="submit">Get Recommendations</button>
         </form>
       </div>
     </div>
 
-    <div id="results" class="results"></div>
-  </div>
-  <div class="disclaimer" style="margin-top: 25px; background: #FEF3C7; color: #92400E; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
-    ⚠️ <strong>Note:</strong> This demo uses a limited API. It can process only <strong>1024 tokens per request</strong> and allows <strong>1 request every 5 minutes</strong>. Exceeding this may result in errors or missed assessments.
-  </div>
-  
-  <div class="loader-overlay" id="loader">
-    <svg class="loader" viewBox="0 0 50 50">
-      <circle cx="25" cy="25" r="20" fill="none" />
-    </svg>
+    <div class="disclaimer">
+      ⚠️ <strong>Note:</strong> This demo uses a limited API. It can process only <strong>1000 characters per request</strong>. Exceeding this may result in truncated processing.
+    </div>
+
+    <div class="loader-overlay" id="loader">
+      <svg class="loader" viewBox="0 0 50 50">
+        <circle cx="25" cy="25" r="20" fill="none" />
+      </svg>
+    </div>
+
+    <div class="results" id="results"></div>
   </div>
 
   <script>
@@ -240,18 +360,13 @@
     let visibleErrors = 10;
     let allErrors = [];
 
-    function showLoader() {
-      loader.style.display = 'flex';
-    }
+    function showLoader() { loader.style.display = 'flex'; }
+    function hideLoader() { loader.style.display = 'none'; }
 
-    function hideLoader() {
-      loader.style.display = 'none';
-    }
-
-    async function fetchData(endpoint, payload) {
+    async function fetchData(payload) {
       showLoader();
       try {
-        const response = await fetch(endpoint, {
+        const response = await fetch('/recommend', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -265,7 +380,7 @@
       }
     }
 
-    function createShowMoreButton() {
+    function createShowMoreButton() { 
       const button = document.createElement('button');
       button.className = 'show-more';
       button.textContent = 'Show More';
@@ -275,8 +390,8 @@
       };
       return button;
     }
-
-    function renderErrors() {
+    
+    function renderErrors() { 
       const errorContainer = document.getElementById('error-list');
       errorContainer.innerHTML = '';
       
@@ -308,7 +423,9 @@
                   <th>Job Levels</th>
                   <th>Languages</th>
                   <th>Duration</th>
+                  <th>Testtype</th>
                   <th>Remote</th>
+                  <th>Adaptive IRT</th>
                 </tr>
               </thead>
               <tbody>`;
@@ -321,7 +438,9 @@
               <td>${item.job_levels}</td>
               <td>${item.languages}</td>
               <td>${item.assessment_length}</td>
+              <td>${item.test_types}</td>
               <td>${item.remote_testing ? '✅' : '❌'}</td>
+              <td>${item.adaptive_irt ? '✅' : '❌'}</td>
             </tr>`;
         });
 
@@ -352,15 +471,8 @@
       e.preventDefault();
       const query = document.getElementById('query').value.trim();
       if (!query) return;
-      const data = await fetchData('/recommend', { query });
-      displayResults(data);
-    });
-
-    document.getElementById('urlForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const url = document.getElementById('url').value.trim();
-      if (!url) return;
-      const data = await fetchData('/recommend_from_url', { url });
+      
+      const data = await fetchData({ query });
       displayResults(data);
     });
   </script>
