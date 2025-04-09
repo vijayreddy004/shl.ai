@@ -1,145 +1,131 @@
-Great! Here's an updated `README.md` that now includes the **PDF ingestion and embedding workflow** using LangChain and Chroma. This section documents how PDFs are processed, split, embedded using HuggingFace models, and stored in a Chroma vector database.
+
+# 🔍 SHL Assessment Recommender System
+
+This is an AI-powered recommendation system built with **Flask**, **Pinecone**, and **BeautifulSoup**. It leverages **vector reranking** and **AI agents** to recommend the most relevant SHL assessments based on a user's natural language query or job description URL.
 
 ---
 
-# 🔍 SHL Assessment Recommendation System
+## 🚀 Overview
 
-This application recommends SHL assessments based on either a **natural language query** or **web page content**, and uses a hybrid of:
-- 🧠 Pinecone Rerank API (for relevance ranking from product catalog)
-- 📄 LangChain-based pipeline (for PDF ingestion, embedding & retrieval)
+This app helps users find the best-fit **SHL assessments** by analyzing a query or web page content and reranking preloaded assessment descriptions using **Pinecone’s RAG-ready rerank API** powered by **LLM-based vector embeddings**.
 
----
-
-## 🚀 Features
-
-- 🔗 **URL Input:** Extracts content from a web page and recommends relevant assessments.
-- 💬 **Query Input:** Accepts natural language input for assessment recommendations.
-- 📁 **PDF Ingestion:** Automatically loads and OCR-processes SHL PDFs to store them in a Chroma vector DB.
-- 🧠 **Embeddings:** Uses HuggingFace multilingual MiniLM for document similarity.
-- 📊 **Product Catalog Integration:** Matches PDFs to metadata from `product.csv`.
+Key highlights:
+- 🧠 Uses AI agent (reranker) to rerank documents based on relevance
+- 🌐 Accepts free-form text **or** a URL to a job description
+- 🧾 Outputs a list of the **top 10** matching SHL products
+- 📊 Uses a preloaded CSV of SHL product metadata
 
 ---
 
-## 🛠️ Setup Instructions
+## 🧬 How It Works
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-repo/shl-recommender.git
-cd shl-recommender
+1. **Data Preparation**  
+   SHL assessment data is stored in a CSV file (`data/product.csv`) and converted to dictionary records. Descriptions are truncated for efficiency.
+
+2. **User Input**  
+   Users provide either:
+   - A **free-text** description of a role
+   - A **URL** pointing to a job description
+
+3. **AI Agent: Reranker**  
+   - The system batches candidate documents and calls **Pinecone's rerank API** (`bge-reranker-v2-m3`)
+   - The API uses **vector embeddings** and LLM-based comparison to score relevance
+
+4. **Results**  
+   The top 10 ranked assessments are returned, along with metadata like:
+   - Name
+   - Test types
+   - Job levels
+   - Languages
+   - Remote testing support
+
+---
+
+## 🛠️ Tech Stack
+
+| Component       | Description                                              |
+|----------------|----------------------------------------------------------|
+| **Flask**       | Lightweight Python web framework                         |
+| **Pinecone**    | Vector database and reranking API                        |
+| **bge-reranker-v2-m3** | Open-source LLM reranker model used via Pinecone         |
+| **BeautifulSoup** | Parses HTML from job description URLs                   |
+| **dotenv**      | Loads environment variables like Pinecone API key        |
+| **pandas**      | Handles CSV data of SHL assessments                      |
+
+---
+
+## 📁 File Structure
+
+```
+.
+├── app.py                  # Main Flask app
+├── data/
+│   └── product.csv         # SHL assessments metadata
+├── templates/
+│   └── input.html          # Input form for user queries
+├── .env                    # Store your PINECONE_API_KEY here
+└── README.md               # You are here
 ```
 
-### 2. Install Dependencies
+---
+
+## 📦 Installation
+
 ```bash
+git clone https://github.com/yourusername/shl-recommender.git
+cd shl-recommender
 pip install -r requirements.txt
 ```
 
-Make sure the following additional packages are installed for PDF and LangChain processing:
-```bash
-pip install langchain unstructured chromadb beautifulsoup4 sentence-transformers
-```
-
----
-
-## 📁 Directory Structure
+Add a `.env` file:
 
 ```
-shl-recommender/
-├── app.py                     # Flask app for query and URL recommendation
-├── embed_pdfs.py              # Script to load, embed, and persist PDFs to Chroma
-├── .env                       # Environment variables
-├── data/
-│   └── product.csv            # Product catalog with metadata
-├── downloads/                 # Folder with SHL PDF brochures
-├── chroma_db/                 # Persisted Chroma vectorstore
-├── templates/
-│   └── input.html             # Frontend form
-├── requirements.txt
-└── README.md
+PINECONE_API_KEY=your-api-key-here
 ```
 
----
+Run the app:
 
-## 📤 PDF Ingestion & Embedding (`embed_pdfs.py`)
-
-This script processes SHL product brochures in the `downloads/` folder:
-
-### 🔄 Steps:
-1. **Load PDFs** with OCR using `UnstructuredPDFLoader`.
-2. **Match filenames** with metadata in `product.csv`.
-3. **Combine PDF text** into a single document per file.
-4. **Split documents** into 2,000-character chunks.
-5. **Generate embeddings** using `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`.
-6. **Store results** in a persistent Chroma vectorstore (`chroma_db/`).
-
-### 🧾 Example Metadata Enrichment:
-Each document gets metadata from `product.csv` like:
-```json
-{
-  "name": "Logical Reasoning Assessment",
-  "url": "https://shl.com/logical-test",
-  "remote_testing": "Yes",
-  "adaptive_irt": "No",
-  "duration": "20 mins",
-  "test_type": "Cognitive"
-}
-```
-
----
-
-## 💻 Running the App
-
-### 1. Ingest PDFs (One-time setup)
-```bash
-python embed_pdfs.py
-```
-
-### 2. Start the Flask App
 ```bash
 python app.py
 ```
 
-Visit: [http://127.0.0.1:5000](http://127.0.0.1:5000)
-
 ---
 
-## 📡 API Endpoints
+## 🔗 API Endpoints
 
-### `POST /recommend`
-Query SHL assessments by natural language input.
-```json
-{
-  "query": "We need a cognitive test for graduates"
-}
-```
+- `/` – Web UI form
+- `/recommend` – POST endpoint for JSON-based recommendations
+- `/health` – Health check endpoint
 
-### `POST /recommend_from_url`
-Provide a webpage URL to extract job descriptions or requirements.
+**Example Request:**
 ```json
+POST /recommend
 {
-  "url": "https://company.com/job/software-engineer"
+  "query": "https://example.com/job-description"
 }
 ```
 
 ---
 
-## 📚 Technologies Used
+## 🤖 About the AI Agent
 
-- **Flask** – Web framework
-- **Pinecone** – Re-ranking API
-- **LangChain** – PDF processing and text splitting
-- **Chroma** – Vector database
-- **HuggingFace Transformers** – Embedding model
-- **BeautifulSoup** – HTML parsing
-- **OCR via Unstructured** – PDF text extraction
+This system uses Pinecone's rerank API as an **AI agent**. Instead of matching documents via simple similarity, this agent **understands** both the query and the documents, evaluating them with **contextual awareness**. It's ideal for complex search tasks like assessment mapping and skills alignment.
 
 ---
 
-## 📝 Future Enhancements
+## 📌 Future Improvements
 
-- Use PDF-based retrieval to complement rerank results.
-- Add UI for uploading and querying PDFs directly.
-- Visualize result scores and metadata in a friendlier format.
+- Integrate full-text vector search for hybrid search + rerank
+- Add support for uploading PDFs of job descriptions
+- Save recommendation history in a database
+- Add frontend enhancements (filters, sorting, etc.)
 
 ---
 
-Let me know if you want this `README.md` split into separate files (e.g., `README`, `docs/setup.md`, `docs/api.md`) or formatted for GitHub Pages!
+## 🧠 Learn More
+
+- [Pinecone Rerank API](https://docs.pinecone.io/docs/rerank)
+- [bge-reranker-v2-m3 Model](https://huggingface.co/BAAI/bge-reranker-v2-m3)
+- [SHL Assessments](https://www.shl.com/)
+
+---
